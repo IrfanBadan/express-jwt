@@ -131,7 +131,7 @@ router.get("/", verifyToken, async (req, res) => {
 router.put("/:id", verifyToken, async (req, res) => {
   if (req.profile.role !== "admin") {
     return res.status(403).json({
-      message: `access denied because your are a ${req.profile.role}`,
+      message: `access denied bro because your are a ${req.profile.role}`,
     });
   }
   let { name, role, imageUrl } = req.body;
