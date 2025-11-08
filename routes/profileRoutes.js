@@ -35,6 +35,7 @@ function verifyToken(req, res, next) {
     }
 
     req.profile = decoded;
+     next();
 
     //     {
     //   id: "6740e7e2b8f7c5b9c3a9e412",   // the user's MongoDB _id
@@ -43,8 +44,6 @@ function verifyToken(req, res, next) {
     //   exp: 1730430845                  // "expires at" timestamp (auto added by JWT)
     // }
   });
-
-  next();
 }
 
 router.post("/api/register", async (req, res) => {
@@ -96,13 +95,13 @@ router.post("/api/login", loginLimiter, async (req, res) => {
     const accessToken = jwt.sign(
       { id: profile._id, role: profile.role },
       process.env.JWT_SECRET,
-      { expiresIn: "15min" }
+      { expiresIn: "30min" }
     );
 
     const refreshToken = jwt.sign(
       { id: profile._id },
       process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "2d" }
+      { expiresIn: "7d" }
     );
 
     profile.refreshToken = refreshToken;
@@ -219,6 +218,16 @@ router.get("/profile/:id", verifyToken, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+router.post("/logout", verifyToken, async (req, res) => {
+  const user = await profiles.findById(req.profile.id);
+  if (user) {
+    user.refreshToken = "";
+    await user.save();
+  }
+  res.status(200).json({ message: "Logged out successfully" });
+});
+
 
 export default router;
 
